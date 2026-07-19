@@ -55,6 +55,14 @@ class SentinelImportError(RuntimeError):
     """Raised when the Sentinel database is missing, unreadable, or mismatched."""
 
 
+def _price_rows(con: duckdb.DuckDBPyConnection) -> int:
+    """count(*) always yields a row; the None guard narrows fetchone's Optional."""
+    row = con.execute("SELECT count(*) FROM prices").fetchone()
+    if row is None:
+        raise SentinelImportError("count(*) on prices returned no row")
+    return int(row[0])
+
+
 def import_sentinel(source_db: Path | str, db_path: Path | str | None = None) -> int:
     """Copy Sentinel's prices into Ballast's DB. Returns count of NEW rows.
 
@@ -105,13 +113,13 @@ def import_sentinel(source_db: Path | str, db_path: Path | str | None = None) ->
 
             # Delta counting: cheaper and more honest than trying to make
             # INSERT OR IGNORE report how many rows it skipped.
-            before = con.execute("SELECT count(*) FROM prices").fetchone()[0]
+            before = _price_rows(con)
             con.execute(
                 "INSERT OR IGNORE INTO prices "
                 "SELECT symbol, date, open, high, low, close, adj_close, volume "
                 "FROM sentinel.prices"
             )
-            after = con.execute("SELECT count(*) FROM prices").fetchone()[0]
+            after = _price_rows(con)
             return after - before
         finally:
             # Always detach, even on error, so the connection is reusable

@@ -41,6 +41,7 @@ import urllib.request
 from datetime import date
 from pathlib import Path
 
+import duckdb
 import pandas as pd
 
 from ballast.config import get_settings
@@ -166,6 +167,14 @@ def _extract_rows(facts: dict, symbol: str) -> list[tuple]:
     return rows
 
 
+def _fundamental_rows(con: duckdb.DuckDBPyConnection) -> int:
+    """count(*) always yields a row; the None guard narrows fetchone's Optional."""
+    row = con.execute("SELECT count(*) FROM fundamentals").fetchone()
+    if row is None:
+        raise EdgarError("count(*) on fundamentals returned no row")
+    return int(row[0])
+
+
 def ingest_fundamentals(
     symbols: list[str], db_path: Path | str | None = None, cik_map: dict[str, int] | None = None
 ) -> int:
@@ -188,7 +197,7 @@ def ingest_fundamentals(
     con = connect(db_path)
     try:
         con.execute(_FUNDAMENTALS_SCHEMA)
-        before = con.execute("SELECT count(*) FROM fundamentals").fetchone()[0]
+        before = _fundamental_rows(con)
         for symbol in cleaned:
             facts = _fetch_json(_FACTS_URL.format(cik=ciks[symbol]))
             rows = _extract_rows(facts, symbol)
@@ -200,7 +209,7 @@ def ingest_fundamentals(
             con.executemany(
                 "INSERT OR IGNORE INTO fundamentals VALUES (?, ?, ?, ?, ?, ?, ?, ?)", rows
             )
-        after = con.execute("SELECT count(*) FROM fundamentals").fetchone()[0]
+        after = _fundamental_rows(con)
         return after - before
     finally:
         con.close()
