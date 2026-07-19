@@ -46,6 +46,12 @@ src = ["src", "tests"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
+# Explicit first-party so classification doesn't depend on whether ballast is
+# pip-installed: newer ruff treats installed packages as third-party, which
+# flipped CI (editable install) vs local runs.
+[tool.ruff.lint.isort]
+known-first-party = ["ballast", "tests"]
+
 [tool.mypy]
 python_version = "3.11"
 mypy_path = "src"
