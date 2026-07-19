@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ballast"
-version = "0.1.0.dev0"
+version = "0.6.0"
 description = "Portfolio construction and risk engine. Companion to Sentinel."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -53,7 +53,9 @@ select = ["E", "F", "I", "UP", "B"]
 known-first-party = ["ballast", "tests"]
 
 [tool.mypy]
-python_version = "3.11"
+# No python_version pin: each CI job checks against its own interpreter.
+# Pinning 3.11 made mypy parse numpy's stubs as 3.11 syntax, which breaks
+# once numpy ships PEP 695 type statements (any runner on 3.12+).
 mypy_path = "src"
 packages = ["ballast"]
 ignore_missing_imports = true
