@@ -8,5 +8,7 @@ dist/
 .pytest_cache/
 .env
 .DS_Store
-data/
-_notes/
+# Anchored to repo root: unanchored data/ also ignored src/ballast/data,
+# which silently kept the whole package out of the initial commit.
+/data/
+/_notes/
