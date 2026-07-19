@@ -1,0 +1,19 @@
+# Example portfolio spec -- the input format every command consumes.
+#
+# Notes: rules enforced by src/ballast/portfolio/spec.py --
+#   - each position has `shares` OR `weight`, never both
+#   - weights are fractions of total NAV (cash included); explicit weights
+#     must sum to <= 1.0
+#   - shares positions are converted to weights at as-of prices, so the
+#     same file gives different weights on different days. That's correct:
+#     it describes holdings, not targets.
+#   - cash is in dollars, >= 0
+# Keep one spec file per real portfolio in this directory; they're inputs,
+# not outputs, and belong in git.
+
+name: core
+positions:
+  - {symbol: NVDA, shares: 80}
+  - {symbol: V, shares: 120}
+  - {symbol: BRK-B, weight: 0.10}
+cash: 12000

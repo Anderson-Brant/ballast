@@ -1,0 +1,28 @@
+# CI: same three gates as `make check`, on 3.11 and 3.12, every push and PR.
+# Notes: keep this boring. New milestones add tests, not new CI steps --
+# the only planned additions are an extras matrix ([opt], [factors]) when
+# cvxpy/statsmodels code lands, so import errors in optional deps surface.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: ruff check src tests
+      - run: ruff format --check src tests
+      - run: mypy
+      - run: pytest -q

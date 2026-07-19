@@ -1,0 +1,22 @@
+# Runtime configuration. Mirrors the locked decisions in _notes/IDEAS.md.
+#
+# Notes: this file is the editable copy of the defaults coded in
+# src/ballast/config.py. Precedence once v0.1.0 wires it in:
+# env vars (BALLAST_*) > this file > coded defaults. If you change a value
+# here, you are changing every experiment that runs afterward -- walk-forward
+# window, EWMA lambda, and cost assumptions are experiment parameters, not
+# cosmetics. Keep this file in git; results in methodology.md cite it.
+
+storage:
+  db_path: data/ballast.duckdb   # DuckDB file; created on first write
+universe:
+  name: sp500                    # screening/backtest universe
+risk:
+  horizons_days: [1, 21]         # VaR/ES horizons: 1 day and 1 month
+  ewma_lambda: 0.94              # RiskMetrics daily decay; revisit after v0.2.0 horse race
+  var_confidence: [0.95, 0.99]   # confidence levels reported everywhere
+walk_forward:
+  window: 252                    # training window, trading days (1y)
+  step: 21                       # rebalance/refit cadence (1mo)
+costs:
+  bps: 2.0                       # per-side transaction cost assumption
